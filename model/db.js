@@ -326,6 +326,9 @@ module.exports.chatAddMessage = (id, author_id, messageText) => {
   });
 };
 
+/**
+ * @desc finds twot with matching id
+ */
 module.exports.getTwotById = (id) => {
   return new Promise((resolve, reject) => {
     Twots.findById(id)
@@ -343,6 +346,9 @@ module.exports.getTwotById = (id) => {
   });
 };
 
+/**
+ * @desc Gets all the twots
+ */
 module.exports.getTwotsAll = () => {
   return new Promise((resolve, reject) => {
     Twots.find()
@@ -360,6 +366,10 @@ module.exports.getTwotsAll = () => {
   });
 };
 
+/**
+ * @desc Create and adds twot 
+ * @params author of twot id, text of twot
+ */
 module.exports.addTwot = (author_id, text) => {
   return new Promise((resolve, reject) => {
     let newTwot = new Twots({ author: author_id, text: text, date: new Date() });
@@ -373,6 +383,10 @@ module.exports.addTwot = (author_id, text) => {
   });
 };
 
+/**
+ * @desc Updates twot 
+ * @params twot id, author of twot id, new text of twot
+ */
 module.exports.updateTwot = (id, author_id, newText) => {
   return new Promise(async (resolve, reject) => {
     this.getTwotById(id)
@@ -395,6 +409,10 @@ module.exports.updateTwot = (id, author_id, newText) => {
   });
 };
 
+/**
+ * @desc Deletes twot 
+ * @params twot id, author of twot id
+ */
 module.exports.deleteTwot = (id, author_id) => {
   return new Promise((resolve, reject) => {
     Twots.deleteOne({ _id: id, author: author_id })
