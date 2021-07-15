@@ -260,3 +260,29 @@ module.exports.addChat = (users) => {
     });
   });
 };
+
+module.exports.chatAddMessage = (id, author_id, messageText) => {
+  return new Promise((resolve, reject) => {
+    this.getChatById(id)
+      .then((chat) => {
+        if (chat.users.includes(author_id)) {
+          chat.messages.push({
+            author: author_id,
+            text: messageText,
+            date: new Date(),
+          });
+          Chats.updateOne({ _id: id }, { $set: chat })
+            .exec()
+            .then(() => {
+              resolve(chat);
+            })
+            .catch((err) => {
+              reject(new Error("Error ocurred updating chat: " + err));
+            });
+        }
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
