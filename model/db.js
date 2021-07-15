@@ -1,6 +1,15 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
+let userSchema = new Schema({
+  username: {
+    unique: true,
+    type: String,
+  },
+  password: String,
+});
+
+let Users;
 
 module.exports.initialize = () => {
   return new Promise((resolve, reject) => {

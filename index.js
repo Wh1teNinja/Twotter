@@ -46,7 +46,14 @@ db.initialize()
     console.log("Error ocurred while connecting to the database: " + err);
   });
 
-app.get("/", authenticated, (req, res) => {
+// get all the controllers
+const loginController = require("./controllers/login");
+const registrationController = require("./controllers/registration");
+
+app.use("/login", loginController);
+app.use("/registration", notAuthenticated, registrationController);
+
+app.get("/", (req, res) => {
   res.json("it works");
 });
 
