@@ -13,7 +13,13 @@ let userSchema = new Schema({
   password: String,
 });
 
+let chatSchema = new Schema({
+  users: [String],
+  messages: [{ author: String, text: String, date: Date }],
+});
+
 let Users;
+let Chats;
 
 module.exports.initialize = () => {
   return new Promise((resolve, reject) => {
@@ -28,6 +34,7 @@ module.exports.initialize = () => {
 
     db.once("open", () => {
       Users = db.model("users", userSchema);
+      Chats = db.model("chats", chatSchema);
       resolve();
     });
   });
@@ -220,6 +227,36 @@ module.exports.addUser = (data) => {
           }
         });
       });
+    });
+  });
+};
+
+module.exports.getChatById = (id) => {
+  return new Promise((resolve, reject) => {
+    Chats.findById(id)
+      .exec()
+      .then((chat) => {
+        if (chat) {
+          resolve(chat.toObject());
+        } else {
+          reject("Chat not found!");
+        }
+      })
+      .catch((err) => {
+        reject(new Error("Error ocurred fetching chat by id: " + err));
+      });
+  });
+};
+
+module.exports.addChat = (users) => {
+  return new Promise((resolve, reject) => {
+    let newChat = new Chats({users, messages: []}); 
+    newChat.save((err) => {
+      if (err) {
+        reject(new Error("Error ocurred while saving the chat: " + err));
+      } else {
+        resolve(newChat);
+      }
     });
   });
 };
