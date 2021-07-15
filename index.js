@@ -2,6 +2,8 @@ const http = require("http");
 const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
 const MongoStore = require("connect-mongo");
 const db = require("./model/db");
 
@@ -26,6 +28,32 @@ const sessionMiddleware = session({
   },
 });
 
+// passport configuration
+passport.use(
+  new LocalStrategy((username, password, done) => {
+    db.authenticateUser({ username, password })
+      .then((user) => {
+        return done(null, user);
+      })
+      .catch((err) => {
+        if (err instanceof Error) return done(err);
+        else return done(null, false, err);
+      });
+  })
+);
+passport.serializeUser(function (user, done) {
+  done(null, user._id);
+});
+passport.deserializeUser(function (id, done) {
+  db.getUserById(id)
+    .then((user) => {
+      done(null, user);
+    })
+    .catch((err) => {
+      done(err, false);
+    });
+});
+
 // configure server
 app.use(
   cors({
@@ -36,6 +64,8 @@ app.use(
 app.use(sessionMiddleware);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(passport.initialize());
+app.use(passport.session());
 
 // connect database
 db.initialize()
@@ -50,11 +80,21 @@ db.initialize()
 const loginController = require("./controllers/login");
 const registrationController = require("./controllers/registration");
 
-app.use("/login", loginController);
+const notAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) res.json({ message: "Already authenticated" });
+  else next();
+};
+const authenticated = (req, res, next) => {
+  if (!req.isAuthenticated())
+    res.json({ message: "Not Authenticated" + req.session.id });
+  else next();
+};
+
+app.use("/login", notAuthenticated, loginController);
 app.use("/registration", notAuthenticated, registrationController);
 
-app.get("/", (req, res) => {
-  res.json("it works");
+app.get("/", authenticated, (req, res) => {
+  res.json(req.user);
 });
 
 server.listen(PORT, () => {
