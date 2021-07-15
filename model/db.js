@@ -18,8 +18,15 @@ let chatSchema = new Schema({
   messages: [{ author: String, text: String, date: Date }],
 });
 
+let twotSchema = new Schema({
+  author: String,
+  text: String,
+  date: Date,
+})
+
 let Users;
 let Chats;
+let Twots;
 
 module.exports.initialize = () => {
   return new Promise((resolve, reject) => {
@@ -35,6 +42,7 @@ module.exports.initialize = () => {
     db.once("open", () => {
       Users = db.model("users", userSchema);
       Chats = db.model("chats", chatSchema);
+      Twots = db.model("twots", twotSchema);
       resolve();
     });
   });
@@ -303,3 +311,4 @@ module.exports.chatAddMessage = (id, author_id, messageText) => {
       });
   });
 };
+
