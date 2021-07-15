@@ -1,5 +1,9 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const Schema = mongoose.Schema;
+
+const usernameRegex = /^\w{4,32}$/;
+const passwordRegex = /^[\w,./!@#$%^&*?]{8,64}$/;
 
 let userSchema = new Schema({
   username: {
@@ -23,6 +27,7 @@ module.exports.initialize = () => {
     });
 
     db.once("open", () => {
+      Users = db.model("users", userSchema);
       resolve();
     });
   });
