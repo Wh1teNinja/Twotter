@@ -55,9 +55,10 @@ passport.deserializeUser(function (id, done) {
 });
 
 // configure server
+app.enable("trust proxy");
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
   })
 );
@@ -85,7 +86,7 @@ const chatSocket = require("./controllers/chat-socket");
 
 const io = require("socket.io")(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
   },
 });

@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "npm": "7.19.11",
+    "node": "12.13.0"
+  },
   "scripts": {
     "test": "mocha tests --timeout 10000",
     "start": "node index.js"
