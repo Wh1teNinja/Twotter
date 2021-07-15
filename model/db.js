@@ -67,3 +67,60 @@ module.exports.getUserById = (id) => {
     reject(err);
   });
 };
+
+/**
+ * @desc Validates user login data and return appropriate messages if something is not correct
+ * @rejects messages array with explanation what went wrong if some of the validation fails
+ * @params object data need to contain username and password
+ */
+ const validateUserLogin = (data) => {
+  return new Promise((resolve, reject) => {
+    let messages = [];
+
+    let { username, password } = data;
+    if (!username)
+      messages.push({ field: "username", message: "Username required" });
+    if (!password)
+      messages.push({ field: "password", message: "Password required" });
+
+    if (
+      messages.length === 0 &&
+      (!usernameRegex.test(username) || !passwordRegex.test(password))
+    )
+      messages.push({ field: "password", message: "Wrong username or password" });
+
+    if (messages.length === 0) resolve();
+    else reject(messages);
+  });
+};
+
+/**
+ * @desc Validates data, fetches user from db, compares passwords, returns user if valid
+ * @params object data need to contain username and password
+ */
+ module.exports.authenticateUser = (data) => {
+  return new Promise(async (resolve, reject) => {
+    validateUserLogin(data)
+      .then(() => {})
+      .catch((messages) => {
+        reject(messages);
+      });
+
+    this.getUser({ username: data.username })
+      .then(async (user) => {
+        if (await bcrypt.compare(data.password, user.password)) {
+          resolve(user);
+        } else {
+          reject([
+            {
+              field: "password",
+              message: "Wrong username or password",
+            },
+          ]);
+        }
+      })
+      .catch((err) => {
+        reject(new Error("Error ocurred getting user: " + err));
+      });
+  });
+};
