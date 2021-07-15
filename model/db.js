@@ -124,3 +124,97 @@ module.exports.getUserById = (id) => {
       });
   });
 };
+
+/**
+ * @desc Validates user registration data and return appropriate messages if something is not correct
+ * @rejects messages array with explanation what went wrong if some of the validation fails
+ * @params object data need to contain username, password and confirmPassword
+ */
+ const validateUserRegistrationData = (data) => {
+  return new Promise((resolve, reject) => {
+    // stores error message if something doesn't satisfy requirements
+    const messages = [];
+
+    const { username, password, confirmPassword } = data;
+
+    if (!username)
+      messages.push({ field: "username", message: "Username required" });
+    if (!password)
+      messages.push({ field: "password", message: "Password required" });
+    if (!confirmPassword)
+      messages.push({
+        field: "confirmPassword",
+        message: "Password confirmation required",
+      });
+
+    if (messages.length) reject(messages);
+
+    if (username < 4 || username > 32)
+      messages.push({
+        field: "username",
+        message: "Username should be from 4 and up to 32 characters long",
+      });
+    else if (!usernameRegex.test(username))
+      messages.push({
+        field: "username",
+        message:
+          "Username should contain only letters, digits and _(underscore) symbol",
+      });
+
+    if (password.length < 8 || password.length > 64)
+      messages.push({
+        field: "password",
+        message: "Password should be from 8 and up to 64 characters long",
+      });
+    else if (!passwordRegex.test(password))
+      messages.push({
+        field: "password",
+        message:
+          "Password should contain only letters, digits and _,./!@#$%^&*? symbols",
+      });
+
+    if (password !== confirmPassword)
+      messages.push({ field: "confirmPassword", message: "Passwords don't match" });
+
+    if (messages.length === 0) resolve();
+    else reject(messages);
+  });
+};
+
+/**
+ * @desc Generates salt and hashes password, then saves user to the database.
+ * @params object data need to contain username and password
+ */
+module.exports.addUser = (data) => {
+  return new Promise(async (resolve, reject) => {
+    validateUserRegistrationData(data)
+      .then(() => {})
+      .catch((messages) => {
+        reject(messages);
+      });
+
+    this.getUser({ username: data.username })
+      .then(() =>
+        reject([{ field: "username", message: "This username is already taken" }])
+      )
+      .catch(() => {});
+
+    let newUser = new Users(data);
+
+    bcrypt.genSalt(10, (err, salt) => {
+      if (err) reject(new Error("Error ocurred generating salt: " + err));
+      bcrypt.hash(newUser.password, salt, (err, hash) => {
+        if (err) reject(new Error("Error ocurred while hashing password: " + err));
+
+        newUser.password = hash;
+        newUser.save((err) => {
+          if (err) {
+            reject(new Error("Error ocurred while saving the user: " + err));
+          } else {
+            resolve(newUser);
+          }
+        });
+      });
+    });
+  });
+};
