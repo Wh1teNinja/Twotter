@@ -231,6 +231,9 @@ module.exports.addUser = (data) => {
   });
 };
 
+/**
+ * @desc finds chat with matching id
+ */
 module.exports.getChatById = (id) => {
   return new Promise((resolve, reject) => {
     Chats.findById(id)
@@ -248,6 +251,9 @@ module.exports.getChatById = (id) => {
   });
 };
 
+/**
+ * @desc Finds all the chats that include user with provided id
+ */
 module.exports.getAllChatsForUser = (user_id) => {
   return new Promise((resolve, reject) => {
     Chats.find({users: user_id})
@@ -265,6 +271,10 @@ module.exports.getAllChatsForUser = (user_id) => {
   });
 }
 
+/**
+ * @desc Create new chat between users provided in the array
+ * @params users array contains users we creating chat for
+ */
 module.exports.addChat = (users) => {
   return new Promise((resolve, reject) => {
     let newChat = new Chats({users, messages: []}); 
@@ -278,6 +288,10 @@ module.exports.addChat = (users) => {
   });
 };
 
+/**
+ * @desc Create and adds message to the chat with provided id 
+ * @params id of room, author of message id, text of message
+ */
 module.exports.chatAddMessage = (id, author_id, messageText) => {
   return new Promise((resolve, reject) => {
     this.getChatById(id)
