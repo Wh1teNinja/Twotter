@@ -248,6 +248,23 @@ module.exports.getChatById = (id) => {
   });
 };
 
+module.exports.getAllChatsForUser = (user_id) => {
+  return new Promise((resolve, reject) => {
+    Chats.find({users: user_id})
+      .exec()
+      .then((chats) => {
+        if (chats) {
+          resolve(chats.map(chat => chat.toObject()));
+        } else {
+          reject("Chats not found!");
+        }
+      })
+      .catch((err) => {
+        reject(new Error("Error ocurred fetching chats for user: " + err));
+      });
+  });
+}
+
 module.exports.addChat = (users) => {
   return new Promise((resolve, reject) => {
     let newChat = new Chats({users, messages: []}); 
