@@ -27,3 +27,24 @@ module.exports.initialize = () => {
     });
   });
 };
+
+/**
+ * @desc finds user with matching data provided
+ * @params object data can contain any user data that we want to search by
+ */
+ module.exports.getUser = (data) => {
+  return new Promise((resolve, reject) => {
+    Users.findOne(data)
+      .exec()
+      .then((user) => {
+        if (user) {
+          resolve(user.toObject());
+        } else {
+          reject("User Not Found!");
+        }
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
