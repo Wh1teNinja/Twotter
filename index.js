@@ -79,6 +79,20 @@ db.initialize()
 // get all the controllers
 const loginController = require("./controllers/login");
 const registrationController = require("./controllers/registration");
+const chatController = require("./controllers/chat");
+
+const chatSocket = require("./controllers/chat-socket");
+
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    credentials: true,
+  },
+});
+io.use((socket, next) => {
+  sessionMiddleware(socket.request, {}, next);
+});
+io.on("connection", chatSocket.initialize);
 
 const notAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) res.json({ message: "Already authenticated" });
@@ -92,6 +106,7 @@ const authenticated = (req, res, next) => {
 
 app.use("/login", notAuthenticated, loginController);
 app.use("/registration", notAuthenticated, registrationController);
+app.use("/chat", authenticated, chatController);
 
 app.get("/", authenticated, (req, res) => {
   res.json(req.user);
