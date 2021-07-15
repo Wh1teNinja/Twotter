@@ -373,7 +373,7 @@ module.exports.updateTwot = (id, author_id, newText) => {
             .catch((err) => {
               reject(new Error("Error ocurred updating twot: " + err));
             });
-        }
+        } else reject("No permission");
       })
       .catch((err) => {
         reject(err);
@@ -381,9 +381,9 @@ module.exports.updateTwot = (id, author_id, newText) => {
   });
 };
 
-module.exports.deleteTwot = (id) => {
+module.exports.deleteTwot = (id, author_id) => {
   return new Promise((resolve, reject) => {
-    Twots.deleteOne({ _id: id })
+    Twots.deleteOne({ _id: id, author: author_id })
       .exec()
       .then(() => {
         resolve("Deleted successfully");
