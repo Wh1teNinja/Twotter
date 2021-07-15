@@ -18,8 +18,15 @@ let chatSchema = new Schema({
   messages: [{ author: String, text: String, date: Date }],
 });
 
+let twotSchema = new Schema({
+  author: String,
+  text: String,
+  date: Date,
+});
+
 let Users;
 let Chats;
+let Twots;
 
 module.exports.initialize = () => {
   return new Promise((resolve, reject) => {
@@ -35,6 +42,7 @@ module.exports.initialize = () => {
     db.once("open", () => {
       Users = db.model("users", userSchema);
       Chats = db.model("chats", chatSchema);
+      Twots = db.model("twots", twotSchema);
       resolve();
     });
   });
@@ -44,7 +52,7 @@ module.exports.initialize = () => {
  * @desc finds user with matching data provided
  * @params object data can contain any user data that we want to search by
  */
- module.exports.getUser = (data) => {
+module.exports.getUser = (data) => {
   return new Promise((resolve, reject) => {
     Users.findOne(data)
       .exec()
@@ -85,7 +93,7 @@ module.exports.getUserById = (id) => {
  * @rejects messages array with explanation what went wrong if some of the validation fails
  * @params object data need to contain username and password
  */
- const validateUserLogin = (data) => {
+const validateUserLogin = (data) => {
   return new Promise((resolve, reject) => {
     let messages = [];
 
@@ -110,7 +118,7 @@ module.exports.getUserById = (id) => {
  * @desc Validates data, fetches user from db, compares passwords, returns user if valid
  * @params object data need to contain username and password
  */
- module.exports.authenticateUser = (data) => {
+module.exports.authenticateUser = (data) => {
   return new Promise(async (resolve, reject) => {
     validateUserLogin(data)
       .then(() => {})
@@ -142,7 +150,7 @@ module.exports.getUserById = (id) => {
  * @rejects messages array with explanation what went wrong if some of the validation fails
  * @params object data need to contain username, password and confirmPassword
  */
- const validateUserRegistrationData = (data) => {
+const validateUserRegistrationData = (data) => {
   return new Promise((resolve, reject) => {
     // stores error message if something doesn't satisfy requirements
     const messages = [];
@@ -256,11 +264,11 @@ module.exports.getChatById = (id) => {
  */
 module.exports.getAllChatsForUser = (user_id) => {
   return new Promise((resolve, reject) => {
-    Chats.find({users: user_id})
+    Chats.find({ users: user_id })
       .exec()
       .then((chats) => {
         if (chats) {
-          resolve(chats.map(chat => chat.toObject()));
+          resolve(chats.map((chat) => chat.toObject()));
         } else {
           reject("Chats not found!");
         }
@@ -269,7 +277,7 @@ module.exports.getAllChatsForUser = (user_id) => {
         reject(new Error("Error ocurred fetching chats for user: " + err));
       });
   });
-}
+};
 
 /**
  * @desc Create new chat between users provided in the array
@@ -277,7 +285,7 @@ module.exports.getAllChatsForUser = (user_id) => {
  */
 module.exports.addChat = (users) => {
   return new Promise((resolve, reject) => {
-    let newChat = new Chats({users, messages: []}); 
+    let newChat = new Chats({ users, messages: [] });
     newChat.save((err) => {
       if (err) {
         reject(new Error("Error ocurred while saving the chat: " + err));
@@ -314,6 +322,88 @@ module.exports.chatAddMessage = (id, author_id, messageText) => {
       })
       .catch((err) => {
         reject(err);
+      });
+  });
+};
+
+module.exports.getTwotById = (id) => {
+  return new Promise((resolve, reject) => {
+    Twots.findById(id)
+      .exec()
+      .then((twot) => {
+        if (twot) {
+          resolve(twot.toObject());
+        } else {
+          reject("Twot not found!");
+        }
+      })
+      .catch((err) => {
+        reject(new Error("Error ocurred fetching twot by id: " + err));
+      });
+  });
+};
+
+module.exports.getTwotsAll = () => {
+  return new Promise((resolve, reject) => {
+    Twots.find()
+      .exec()
+      .then((twots) => {
+        if (twots) {
+          resolve(twots.map((twot) => twot.toObject()));
+        } else {
+          reject("No twots found!");
+        }
+      })
+      .catch((err) => {
+        reject(new Error("Error ocurred fetching twot by id: " + err));
+      });
+  });
+};
+
+module.exports.addTwot = (author_id, text) => {
+  return new Promise((resolve, reject) => {
+    let newTwot = new Twots({ author: author_id, text: text, date: new Date() });
+    newTwot.save((err) => {
+      if (err) {
+        reject(new Error("Error ocurred while saving the twot: " + err));
+      } else {
+        resolve(newTwot);
+      }
+    });
+  });
+};
+
+module.exports.updateTwot = (id, author_id, newText) => {
+  return new Promise(async (resolve, reject) => {
+    this.getTwotById(id)
+      .then((twot) => {
+        if (twot.author === author_id) {
+          twot.text = newText;
+          Twots.updateOne({ _id: id }, { $set: twot })
+            .exec()
+            .then(() => {
+              resolve(twot);
+            })
+            .catch((err) => {
+              reject(new Error("Error ocurred updating twot: " + err));
+            });
+        } else reject("No permission");
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+module.exports.deleteTwot = (id, author_id) => {
+  return new Promise((resolve, reject) => {
+    Twots.deleteOne({ _id: id, author: author_id })
+      .exec()
+      .then(() => {
+        resolve("Deleted successfully");
+      })
+      .catch((err) => {
+        reject(new Error("Error ocurred deleting twot: " + err));
       });
   });
 };

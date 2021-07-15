@@ -81,6 +81,7 @@ db.initialize()
 const loginController = require("./controllers/login");
 const registrationController = require("./controllers/registration");
 const chatController = require("./controllers/chat");
+const twotController = require("./controllers/twot");
 
 const chatSocket = require("./controllers/chat-socket");
 
@@ -108,6 +109,7 @@ const authenticated = (req, res, next) => {
 app.use("/login", notAuthenticated, loginController);
 app.use("/registration", notAuthenticated, registrationController);
 app.use("/chat", authenticated, chatController);
+app.use("/twot", authenticated, twotController);
 
 app.get("/", authenticated, (req, res) => {
   res.json(req.user);
