@@ -48,3 +48,22 @@ module.exports.initialize = () => {
       });
   });
 };
+
+/**
+ * @desc finds user with matching id
+ */
+module.exports.getUserById = (id) => {
+  return new Promise((resolve, reject) => {
+    Users.findById(id)
+      .exec()
+      .then((user) => {
+        if (user) {
+          resolve(user.toObject());
+        } else {
+          reject("User Not Found!");
+        }
+      });
+  }).catch((err) => {
+    reject(err);
+  });
+};
